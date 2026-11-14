@@ -145,6 +145,7 @@ export const AuthProvider = ({ children }) => {
   const isKeyConfigured = Boolean(
     publishableKey &&
       typeof publishableKey === 'string' &&
+      !publishableKey.includes('your_clerk_publishable_key_here') &&
       (publishableKey.startsWith('pk_test_') || publishableKey.startsWith('pk_live_'))
   );
 
