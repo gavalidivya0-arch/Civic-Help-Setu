@@ -15,6 +15,7 @@ import {
   Home,
   BookOpen,
   MapPin,
+  QrCode,
   FileText,
   Users,
   Bot,
@@ -874,6 +875,13 @@ const Navbar = ({ initialOpen = false, defaultOpen } = {}) => {
                 activeTarget: '/tree-health',
                 label: t('nav.treeHealth', 'Tree Health Inventory'),
                 icon: Trees
+              })}
+
+              {renderNavLink({
+                to: '/public-assets',
+                activeTarget: '/public-assets',
+                label: t('nav.publicAssets', 'Public Asset Registry'),
+                icon: QrCode
               })}
 
               {renderNavLink({

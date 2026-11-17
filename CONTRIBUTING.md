@@ -36,9 +36,18 @@ npx vitest run src/services/treeInventoryService.test.js       # tree inventory 
 npx vitest run src/services/treeInventoryMigrations.test.js    # tree schema migration/rollback tests (#749)
 npx vitest run src/pages/TreeHealthInventory.test.jsx          # tree page public-projection tests (#749)
 npx vitest run src/components/trees/TreeInventoryComponents.test.jsx # tree component/accessibility tests (#749)
+npx vitest run src/services/assetRegistryService.test.js      # public asset registry domain/security tests (#750)
+npx vitest run src/services/assetRegistryMigrations.test.js   # asset schema migration/rollback tests (#750)
+npx vitest run src/services/assetAccessControl.test.js        # asset role/jurisdiction tests (#750)
+npx vitest run src/services/assetTriageService.test.js        # explainable asset triage tests (#750)
+npx vitest run src/pages/PublicAssetRegistry.test.jsx         # asset public-projection/page tests (#750)
+npx vitest run src/components/assets/AssetRegistryComponents.test.jsx # asset component/accessibility tests (#750)
+npx vitest run tests/asset-fault-reports.test.js              # asset fault-report API tests (#750)
+npx vitest run src/services/clearMyDataService.test.js        # asset citizen-data scrub tests (#750)
 ```
 
-Architecture, data model, roles, triage boundaries, CSV format, migrations and operational limits for the tree inventory are documented in [docs/tree-health-inventory.md](docs/tree-health-inventory.md).
+Architecture, data model, roles, triage boundaries, migrations, retention and operational limits for the tree inventory are documented in [docs/tree-health-inventory.md](docs/tree-health-inventory.md).
+The public asset registry is documented in [docs/public-asset-maintenance-registry.md](docs/public-asset-maintenance-registry.md).
 
 ## Security checks
 Every PR runs a secret scan, a dependency audit and a lint for unsafe HTML/JS patterns. Locally:

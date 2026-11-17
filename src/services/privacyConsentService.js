@@ -12,6 +12,7 @@ import {
   verifyExportedDataIntegrity,
   MAX_AUDIT_LOG_ENTRIES,
 } from './privacyIntegrityService.js';
+import { ASSET_STORAGE_KEYS } from './assetRegistryConstants.js';
 
 const CONSENT_STORAGE_KEY = 'civicbridge_consent_preferences';
 const AUDIT_STORAGE_KEY = 'civicbridge_privacy_audit_log';
@@ -94,6 +95,13 @@ export const USER_DATA_STORES = [
   { key: 'civicbridge_tree_citizen_reports_v1', category: 'activity', exportAs: null }, // treeInventoryService.js
   { key: 'civicbridge_tree_reports_v1', category: 'activity', exportAs: null }, // legacy tree reports
   { key: 'civicbridge_tree_reporter_key', category: 'activity', exportAs: null }, // TreeHealthInventory.jsx
+  // Citizen-authored asset fault reports, attachments and the local reporter key
+  // are the citizen's data. The municipal asset register, inspections, work
+  // orders, repair history, QR tags and audit chain are public-authority
+  // operating records and live in RETAINED_STORAGE_KEYS. The asset report record
+  // is retained because work orders reference it; its citizen content is
+  // scrubbed by clearAssetCitizenData when this reporter key is cleared.
+  { key: 'civicbridge_asset_reporter_key', category: 'activity', exportAs: null }, // PublicAssetRegistry.jsx
   { key: 'civicbridge_citizen_drafts_v1', category: 'drafts', exportAs: 'citizenDrafts', empty: {} }, // citizenDraftSyncEngine.js
   { key: 'civicbridge_offline_operations_v1', category: 'drafts', exportAs: null, empty: {} }, // citizenDraftSyncEngine.js
   { key: 'civicbridge_sync_sessions_v1', category: 'drafts', exportAs: null, empty: {} }, // citizenDraftSyncEngine.js
@@ -226,6 +234,13 @@ export const RETAINED_STORAGE_KEYS = [
   'civicbridge_tree_rate_limit_v1',
   'civicbridge_tree_migration_backup_v1',
   'civicbridge_trees_v1',
+  // Municipal public-asset register, inspections, work orders, verified repair
+  // history, QR tag metadata, triage suggestions and append-only audit chain
+  // (#750). These are public-authority operating records, not a citizen's
+  // profile data. The asset module applies its own retention policy to closed
+  // citizen reports; clearAssetCitizenData scrubs the citizen-authored fields
+  // without destroying the work-order and repair history.
+  ...Object.values(ASSET_STORAGE_KEYS),
   // Handled by purge itself: consents are reset, the audit log keeps the deletion receipt
   CONSENT_STORAGE_KEY,
   AUDIT_STORAGE_KEY,

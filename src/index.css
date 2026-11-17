@@ -1681,3 +1681,122 @@ p, span, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
+/* --- QR-Based Public Asset Registry (#750) --- */
+.form-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--border-main);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.form-input:focus-visible {
+  outline: 3px solid var(--accent-main);
+  outline-offset: 2px;
+}
+
+.form-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.asset-filter-panel {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--border-main);
+  border-radius: 0.9rem;
+  background: var(--surface-raised, var(--glass-bg));
+  display: grid;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.asset-filter-panel legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.35rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.asset-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.7rem;
+}
+
+.asset-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.asset-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7rem;
+}
+
+.asset-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.asset-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.asset-detail-grid dt {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.asset-detail-grid dd {
+  margin: 0.15rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.3rem;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.asset-tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+@media (max-width: 640px) {
+  .asset-filter-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .asset-filter-actions .btn {
+    width: 100%;
+  }
+
+  .asset-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+}

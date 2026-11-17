@@ -16,6 +16,10 @@ import {
   USER_DATA_SESSION_STORES,
   recordPrivacyAuditLog,
 } from './privacyConsentService.js';
+import { ASSET_STORAGE_KEYS } from './assetRegistryConstants.js';
+import { clearAssetCitizenData } from './assetWorkOrderService.js';
+
+const ASSET_REPORTER_KEY = 'civicbridge_asset_reporter_key';
 
 const safeStorage = (name) => {
   try {
@@ -129,6 +133,34 @@ export function expandCategories(requested) {
 }
 
 /**
+ * Scrubs citizen-authored fields from public-asset fault reports before the
+ * reporter key is removed. The report record itself is a municipal operating
+ * record because work orders and repair history point at it, so it is retained;
+ * only the description, reporter hash, label and attachments are cleared.
+ * Runs only when this browser has actually used the asset registry, so clearing
+ * other data can never seed the demonstration register.
+ */
+function scrubAssetCitizenData(local) {
+  try {
+    if (!local) return null;
+    const reporterKey = local.getItem(ASSET_REPORTER_KEY);
+    if (!reporterKey) return null;
+    if (local.getItem(ASSET_STORAGE_KEYS.reports) === null) return null;
+    const result = clearAssetCitizenData({ reporterKey, storage: local });
+    return {
+      clearedReports: result.clearedReports || 0,
+      removedEvidence: result.removedEvidence || 0,
+    };
+  } catch (err) {
+    return {
+      clearedReports: 0,
+      removedEvidence: 0,
+      error: err?.message || 'The asset report content could not be scrubbed.',
+    };
+  }
+}
+
+/**
  * Deletes the chosen categories and reports what happened for each one.
  * A failure in one key or category never stops the others and is never hidden: the matching
  * result row has status "partial" or "failed" with the key names and the error.
@@ -158,6 +190,7 @@ export function clearUserData({
     throw new Error('Choose at least one category to clear.');
   }
   const { ids, auto } = expandCategories(categories);
+  const assetReportScrub = ids.includes('activity') ? scrubAssetCitizenData(local) : null;
 
   const results = ids.map((id) => {
     const category = DATA_CATEGORIES.find((c) => c.id === id);
@@ -189,13 +222,29 @@ export function clearUserData({
       categories: ids,
       clearedCategories: results.filter((r) => r.status === 'cleared').map((r) => r.id),
       failedKeysCount: results.reduce((sum, r) => sum + r.failed.length, 0),
+      assetReportsScrubbed: assetReportScrub?.clearedReports || 0,
     },
     actorId
   );
 
-  return {
-    ok: results.every((r) => r.status !== 'partial' && r.status !== 'failed'),
+  if (assetReportScrub) {
+    recordPrivacyAuditLog(
+      'ASSET_REPORT_CONTENT_SCRUBBED',
+      {
+        clearedReports: assetReportScrub.clearedReports,
+        removedEvidence: assetReportScrub.removedEvidence,
+        failed: Boolean(assetReportScrub.error),
+      },
+      actorId
+    );
+  }
+
+  const scrubFailed = Boolean(assetReportScrub?.error);
+  const response = {
+    ok: results.every((r) => r.status !== 'partial' && r.status !== 'failed') && !scrubFailed,
     clearedAt: new Date().toISOString(),
     results,
   };
+  if (assetReportScrub) response.assetReportScrub = assetReportScrub;
+  return response;
 }

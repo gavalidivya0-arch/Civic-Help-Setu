@@ -16,6 +16,8 @@ import {
   RETAINED_STORAGE_KEYS,
   getPrivacyAuditLogs,
 } from './privacyConsentService.js';
+import { ensureAssetRegistryData } from './assetRegistryMigrations.js';
+import { submitFaultReport } from './assetFaultService.js';
 
 // Storage double with key()/length like the real thing. `failOn` makes removeItem throw for a key,
 // `ignore` makes removeItem silently do nothing (the browser "forgot" to delete it).
@@ -148,6 +150,69 @@ describe('clearUserData (#223)', () => {
       expect(tracking.recordCount).toBe(4); // 2 applications + 1 token + 1 reminder
       expect(summary.find((c) => c.id === 'assistant').recordCount).toBe(1);
       expect(summary.every((c) => typeof c.label === 'string' && typeof c.description === 'string')).toBe(true);
+    });
+
+    it('scrubs citizen content from asset fault reports but keeps the municipal record', () => {
+      const local = makeStorage({ civicbridge_asset_reporter_key: 'asset_resident_test' });
+      ensureAssetRegistryData({ storage: local, nowMs: Date.parse('2026-11-16T08:00:00.000Z') });
+      const submitted = submitFaultReport(
+        {
+          assetPublicId: 'BLR-AST-0001',
+          category: 'damage',
+          severity: 'major',
+          description: 'A timber slat is loose and one fixing bolt is protruding from the seat.',
+          evidence: [
+            {
+              mimeType: 'image/png',
+              sizeBytes: 128,
+              url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==',
+              caption: 'Loose slat',
+            },
+          ],
+        },
+        {
+          storage: local,
+          reporterKey: 'asset_resident_test',
+          nowMs: Date.parse('2026-11-16T08:00:00.000Z'),
+        }
+      );
+      expect(submitted.publicReport.publicReference).toMatch(/^AST-REP-/);
+      const before = JSON.parse(local.getItem('civicbridge_asset_fault_reports_v1'));
+      const submittedRecord = before.find(
+        (report) => report.publicReference === submitted.publicReport.publicReference
+      );
+      expect(submittedRecord).toBeTruthy();
+      expect(submittedRecord.reporterKeyHash).toBeTruthy();
+      const evidenceBefore = JSON.parse(local.getItem('civicbridge_asset_repair_evidence_v1'));
+
+      const cleared = clearUserData({ categories: ['activity'], actorId: 'resident_1', local, session: makeStorage() });
+
+      expect(cleared.ok).toBe(true);
+      expect(cleared.assetReportScrub).toEqual({ clearedReports: 1, removedEvidence: 1 });
+      expect(local.getItem('civicbridge_asset_reporter_key')).toBeNull();
+      const reports = JSON.parse(local.getItem('civicbridge_asset_fault_reports_v1'));
+      const clearedRecord = reports.find(
+        (report) => report.publicReference === submitted.publicReport.publicReference
+      );
+      expect(clearedRecord).toBeTruthy();
+      expect(clearedRecord.description).toBe('[Cleared at citizen request]');
+      expect(clearedRecord.reporterKeyHash).toBeNull();
+      expect(clearedRecord.evidenceIds).toEqual([]);
+      const evidenceAfter = JSON.parse(local.getItem('civicbridge_asset_repair_evidence_v1'));
+      expect(evidenceAfter).toHaveLength(evidenceBefore.length - 1);
+      expect(evidenceAfter.some((item) => item.caption === 'Loose slat')).toBe(false);
+      expect(evidenceAfter.every((item) => item.entityType !== 'FaultReport' || item.entityId !== submittedRecord.id)).toBe(true);
+      expect(evidenceAfter.length).toBeGreaterThan(0);
+    });
+
+    it('does not seed the asset registry when clearing activity data on an untouched device', () => {
+      const local = makeStorage(seed());
+      const cleared = clearUserData({ categories: ['activity'], actorId: 'resident_1', local, session: makeStorage() });
+      expect(cleared.ok).toBe(true);
+      expect(cleared.assetReportScrub).toBeUndefined();
+      expect(local.getItem('civicbridge_asset_registry_meta_v1')).toBeNull();
+      expect(local.getItem('civicbridge_asset_registry_v1')).toBeNull();
+      expect(local.getItem('civicbridge_asset_fault_reports_v1')).toBeNull();
     });
   });
 

@@ -48,6 +48,7 @@ import FireSafetyGuidePage from './pages/FireSafetyGuidePage';
 import TreePermissionGuidePage from './pages/TreePermissionGuidePage';
 import CivicWorksBoard from './pages/CivicWorksBoard';
 import TreeHealthInventory from './pages/TreeHealthInventory';
+import PublicAssetRegistry from './pages/PublicAssetRegistry';
 import CrematoriumDirectory from './pages/CrematoriumDirectory';
 import FairPriceShopBoard from './pages/FairPriceShopBoard';
 import TenderReadinessWorkspace from './pages/TenderReadinessWorkspace';
@@ -143,6 +144,9 @@ function AppRoot() {
                       <Route path="/blackspots" element={<RoadSafetyDashboard />} />
                       <Route path="/tree-health" element={<TreeHealthInventory />} />
                       <Route path="/tree-inventory" element={<TreeHealthInventory />} />
+                      <Route path="/public-assets" element={<PublicAssetRegistry />} />
+                      <Route path="/public-assets/tag/:token" element={<PublicAssetRegistry />} />
+                      <Route path="/asset-registry" element={<PublicAssetRegistry />} />
                       <Route path="/shared-checklist/:token" element={<SharedChecklistView />} />
                       <Route path="/shared-directory/:token" element={<SharedDirectoryView />} />
                       <Route path="/app-status/:token" element={<PublicApplicationStatusView />} />

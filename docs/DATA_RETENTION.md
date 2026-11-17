@@ -99,6 +99,7 @@ Retention for all of these: until deleted by the person (no automatic expiry).
 | `civicbridge_tree_citizen_reports_v1` | `treeInventoryService.js` | Citizen tree observations, tracking codes, triage and review state | Reviews, votes and reports |
 | `civicbridge_tree_reports_v1` | `treeInventoryMigrations.js` | Legacy citizen tree reports read once during migration | Reviews, votes and reports |
 | `civicbridge_tree_reporter_key` | `TreeHealthInventory.jsx` | Random local key used only to rate-limit and deduplicate citizen tree reports | Reviews, votes and reports |
+| `civicbridge_asset_reporter_key` | `PublicAssetRegistry.jsx` | Random local key used only to rate-limit and deduplicate citizen asset fault reports | Reviews, votes and reports |
 | `civicbridge_civic_works_reports_v1` | `civicWorksBoardService.js` | Ward civic works reports and moderation state | Reviews, votes and reports |
 | `civicbridge_civic_works_clusters_v1` | `civicWorksBoardService.js` | Clustered duplicate ward reports | Reviews, votes and reports |
 | `civicbridge_civic_works_rate_limit_v1` | `civicWorksBoardService.js` | Ward report submission rate limit tracking | Reviews, votes and reports |
@@ -119,6 +120,8 @@ Retention for all of these: until deleted by the person (no automatic expiry).
 | `civicbridge_user_coords` (sessionStorage) | `locationService.js` | Last location the browser gave the app, for the nearby offices page. Gone when the tab closes | Offline copies and location |
 
 The offline copies only duplicate tracking records and saved items, so clearing either of those clears them too. The result list says so.
+
+Asset fault reports are a mixed record. The citizen's random `civicbridge_asset_reporter_key` is owned data and is deleted. Because work orders reference the report, the report record in `civicbridge_asset_fault_reports_v1` stays as a municipal operating record, but **Clear my data** replaces its description with `[Cleared at citizen request]`, removes its reporter hash, label and attachment links, deletes the matching `FaultReport` images from `civicbridge_asset_repair_evidence_v1`, and writes a privacy audit event. Work-order closure photos are retained. The asset module also archives closed reports older than 365 days on request while retaining repair history.
 
 After clearing, the sample reviews, sample audit reports and the sample vault documents are put back the next time those pages are opened. They are demo content, not the person's data.
 
@@ -154,6 +157,8 @@ After clearing, the sample reviews, sample audit reports and the sample vault do
 | `civicbridge_voluntary_profile_opt_in` | Voluntary profile participation consent | Voluntary profile feature |
 | `civicbridge_voluntary_profile_attrs` | Voluntary profile attribute selections | Voluntary profile feature |
 | `civicbridge_tree_inventory_meta_v1`, `civicbridge_tree_assets_v1`, `civicbridge_tree_species_v1`, `civicbridge_tree_inspections_v1`, `civicbridge_tree_maintenance_orders_v1`, `civicbridge_tree_pruning_events_v1`, `civicbridge_tree_planting_sites_v1`, `civicbridge_tree_triage_suggestions_v1`, `civicbridge_tree_audit_events_v1`, `civicbridge_tree_idempotency_v1`, `civicbridge_tree_rate_limit_v1`, `civicbridge_tree_migration_backup_v1`, `civicbridge_trees_v1` | Municipal tree register, inspection history, maintenance orders, pruning history, planting sites, triage suggestions, append-only audit chain, idempotency/rate-limit state, schema metadata and rollback backup | Public-authority operating records, not a citizen profile. Kept so clearing a citizen's data cannot erase the public register or audit trail. The tree module applies its own 365-day retention to closed citizen reports |
+| `civicbridge_asset_registry_meta_v1`, `civicbridge_asset_categories_v1`, `civicbridge_asset_locations_v1`, `civicbridge_asset_registry_v1`, `civicbridge_asset_inspections_v1`, `civicbridge_asset_work_orders_v1`, `civicbridge_asset_repair_events_v1`, `civicbridge_asset_repair_evidence_v1`, `civicbridge_asset_triage_suggestions_v1` | Municipal public-asset register, category and location reference data, inspections, work orders, append-only repair events, closure evidence, and triage suggestions | Public-authority operating records, not a citizen profile. Repair events are never edited; verification is recorded on the work order. Kept so clearing a citizen's data cannot erase the public register or repair history |
+| `civicbridge_asset_qr_tokens_v1`, `civicbridge_asset_audit_events_v1`, `civicbridge_asset_idempotency_v1`, `civicbridge_asset_rate_limit_v1`, `civicbridge_asset_action_nonces_v1`, `civicbridge_asset_migration_backup_v1`, `civicbridge_assets_v1`, `civicbridge_asset_reports_v1` | Hashed QR lookup tags, append-only hash-chained audit trail, idempotency records, anti-abuse rate limits, single-use staff action nonces, rollback backup, and legacy asset/report keys read during migration | Security and operating state. QR tags store only token hashes, never the printed token. Retained so a citizen clear cannot break the audit chain or replay protection |
 
 ## Remote data
 
